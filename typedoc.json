@@ -13,6 +13,5 @@
     "excludeInternal": true,
     "treatWarningsAsErrors": false,
     "validation": true,
-    "disableSources": true,
     "gitRevision": "main"
 }
