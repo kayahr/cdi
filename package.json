@@ -6,6 +6,7 @@
     "description": "Simple generic dependency injection library",
     "keywords": [
         "cdi",
+        "dependency-injection",
         "context",
         "dependency",
         "dependencies",
