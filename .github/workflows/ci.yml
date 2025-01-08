@@ -22,6 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - name: Build
+        run: npm ci
       - name: Build API Doc
         run: npm run apidoc
       - name: Setup Pages
