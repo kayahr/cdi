@@ -129,14 +129,15 @@ export class Context {
     #get<T>(qualifier: Qualifier<T>): T | Promise<T> {
         const previous = this.activate();
         try {
-            let injectable = (this.#injectables.get(qualifier) as Injectable<T> | undefined)?.get();
-            if (injectable == null && this.#parent != null) {
-                injectable = this.#parent.#get(qualifier);
+            const injectable = this.#injectables.get(qualifier) as Injectable<T> | null;
+            let value = injectable == null ? null : injectable.get();
+            if (value == null && this.#parent != null) {
+                value = this.#parent.#get(qualifier);
             }
-            if (injectable == null) {
+            if (value == null) {
                 throw new InjectionError(`Dependency ${Qualifier.toString(qualifier)} not found`);
             }
-            return injectable;
+            return value;
         } finally {
             previous.activate();
         }
@@ -197,6 +198,16 @@ export class Context {
         }
         return this.#setInjectable(new Injectable(func, (...injectParams: P) => (...callParams: P) =>
             func(...createParams(injectParams, callParams) as P), inject.filter(qualifier => qualifier != null), name));
+    }
+
+    /**
+     * Checks if this context (or its parents) have an injectable matching the given qualifier.
+     *
+     * @param qualifier - The dependency injection qualifier to look for.
+     * @returns True if context or its parents have a matching injectable, false if not.
+     */
+    public has(qualifier: Qualifier): boolean {
+        return this.#injectables.has(qualifier) || (this.#parent?.has(qualifier) === true);
     }
 
     public get<T, P extends unknown[]>(fn: (...params: P) => T): Promise<(...params: unknown[]) => T> | ((...params: unknown[]) => T);

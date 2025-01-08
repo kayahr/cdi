@@ -61,6 +61,14 @@ if (dbService instanceof Promise) {
 }
 ```
 
+If you just want to check if a context has a matching dependency for a given qualifier then you can use the `has` method:
+
+```typescript
+if (context.has(DBService)) {
+    // ...
+}
+```
+
 ## Child contexts
 
 Child contexts can be created with the `createChildContext` method. This only creates the context, it does not yet become the active context. To activate it, you have to use the `activate` method. This makes the context the current active context so all code which uses `Context.getActive()` (which includes usage of the `injectable` decorator) and is called after activating this new context will use this context.

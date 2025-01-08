@@ -683,4 +683,48 @@ describe("Context", () => {
             expect(() => context.getSync(Symbol("test"))).toThrowWithMessage(InjectionError, "Dependency Symbol(test) not found");
         });
     });
+    describe("has", () => {
+        it("returns false if context does not know the given qualifier", () => {
+            class Test {}
+            function test() {}
+            expect(context.has(Test)).toBe(false);
+            expect(context.has(test)).toBe(false);
+            expect(context.has("test")).toBe(false);
+            expect(context.has(qualify(Test, "test"))).toBe(false);
+        });
+        it("returns false if context and its parent does not know the given qualifier", () => {
+            class Test {}
+            function test() {}
+            const childContext = context.createChildContext();
+            expect(childContext.has(Test)).toBe(false);
+            expect(childContext.has(test)).toBe(false);
+            expect(childContext.has("test")).toBe(false);
+            expect(childContext.has(qualify(Test, "test"))).toBe(false);
+        });
+        it("returns true if context knows the given qualifier", () => {
+            class Test {}
+            context.setClass(Test);
+            context.setClass(Test, { name: "test" });
+            function test() {}
+            context.setFunction(test, []);
+            context.setValue(53, "test");
+            expect(context.has(Test)).toBe(true);
+            expect(context.has(test)).toBe(true);
+            expect(context.has("test")).toBe(true);
+            expect(context.has(qualify(Test, "test"))).toBe(true);
+        });
+        it("returns true if parent context knows the given qualifier", () => {
+            class Test {}
+            context.setClass(Test);
+            context.setClass(Test, { name: "test" });
+            function test() {}
+            context.setFunction(test, []);
+            context.setValue(53, "test");
+            const childContext = context.createChildContext();
+            expect(childContext.has(Test)).toBe(true);
+            expect(childContext.has(test)).toBe(true);
+            expect(childContext.has("test")).toBe(true);
+            expect(childContext.has(qualify(Test, "test"))).toBe(true);
+        });
+    });
 });
