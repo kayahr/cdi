@@ -11,7 +11,7 @@
     "excludePrivate": true,
     "excludeExternals": true,
     "excludeInternal": true,
-    "treatWarningsAsErrors": false,
+    "treatWarningsAsErrors": true,
     "validation": true,
     "gitRevision": "main"
 }
