@@ -210,6 +210,17 @@ export class Context {
         return this.#injectables.has(qualifier) || (this.#parent?.has(qualifier) === true);
     }
 
+    /**
+     * Removes the injectable with the given qualifier from this dependency injection context. It is only removed from this context, the removal does not
+     * bubble up the parent hierarchy.
+     *
+     * @param qualifier - The qualifier to remove.
+     * @returns True if an injectable was found and removed, false if not.
+     */
+    public remove(qualifier: Qualifier): boolean {
+        return this.#injectables.delete(qualifier);
+    }
+
     public get<T, P extends unknown[]>(fn: (...params: P) => T): Promise<(...params: unknown[]) => T> | ((...params: unknown[]) => T);
     public get<T>(qualifier: Qualifier<T>): T | Promise<T>;
 

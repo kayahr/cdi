@@ -40,16 +40,28 @@ describe("decorator", () => {
         expect(test.b).toBeInstanceOf(DepB);
     });
     it("can inject a singleton class with named dependencies", () => {
-        @injectable({ inject: [ "dep-a", "dep-b-alias" ] })
+        const depA = Symbol("dep-a");
+        @injectable({ inject: [ depA, "dep-b-alias" ] })
         class Test {
             public constructor(public a: DepA, public b: DepB) {}
         }
-        context.setClass(DepA, { name: "dep-a" });
+        context.setClass(DepA, { name: depA });
         context.setClass(DepB, { name: [ "dep-b", "dep-b-alias" ] });
         const test = context.getSync(Test);
         expect(context.getSync(Test)).toBe(test);
         expect(test.a).toBeInstanceOf(DepA);
         expect(test.b).toBeInstanceOf(DepB);
+    });
+    it("can inject a value via symbol", () => {
+        const sym = Symbol("dep-a");
+        @injectable({ inject: [ sym ] })
+        class Test {
+            public constructor(public a: string) {}
+        }
+        context.setValue("foobar", sym);
+        const test = context.getSync(Test);
+        expect(context.getSync(Test)).toBe(test);
+        expect(test.a).toBe("foobar");
     });
     it("can inject a singleton class with mixed (type and named) dependencies", () => {
         @injectable({ inject: [ "dep-a", DepB ] })

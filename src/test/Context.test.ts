@@ -727,4 +727,39 @@ describe("Context", () => {
             expect(childContext.has(qualify(Test, "test"))).toBe(true);
         });
     });
+    describe("remove", () => {
+        it("removes a named dependency from the context", () => {
+            context.setValue(1, "test");
+            expect(context.has("test")).toBe(true);
+            expect(context.remove("test")).toBe(true);
+            expect(context.has("test")).toBe(false);
+        });
+        it("removes a typed dependency from the context", () => {
+            class Test {}
+            context.setClass(Test);
+            expect(context.has(Test)).toBe(true);
+            expect(context.remove(Test)).toBe(true);
+            expect(context.has(Test)).toBe(false);
+        });
+        it("removes a qualified typed dependency from the context", () => {
+            class Test {}
+            context.setClass(Test, { name: "test" });
+            expect(context.has(Test)).toBe(true);
+            expect(context.has("test")).toBe(true);
+            expect(context.has(qualify(Test, "test"))).toBe(true);
+            expect(context.remove(qualify(Test, "test"))).toBe(true);
+            expect(context.has(Test)).toBe(true);
+            expect(context.has("test")).toBe(true);
+            expect(context.has(qualify(Test, "test"))).toBe(false);
+        });
+        it("returns false if dependency was not found", () => {
+            expect(context.remove("test")).toBe(false);
+        });
+        it("does not remove dependency in parent", () => {
+            context.setValue(1, "test");
+            const childContext = context.createChildContext();
+            expect(childContext.remove("test")).toBe(false);
+            expect(context.has("test")).toBe(true);
+        });
+    });
 });
