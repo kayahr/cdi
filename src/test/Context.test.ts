@@ -62,7 +62,7 @@ describe("Context", () => {
         });
     });
     describe("getRoot", () => {
-        it("returns the root context of a context", () => {
+        it("returns the root context", () => {
             const root = Context.getRoot();
             expect(root.getParent()).toBe(null);
         });
