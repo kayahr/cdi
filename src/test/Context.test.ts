@@ -762,4 +762,26 @@ describe("Context", () => {
             expect(context.has("test")).toBe(true);
         });
     });
+    describe("findContext", () => {
+        it("returns context if it contains the qualifier", () => {
+            class Test {}
+            context.setClass(Test, { name: "test" });
+            expect(context.findContext("test")).toBe(context);
+            expect(context.findContext(Test)).toBe(context);
+            expect(context.findContext(qualify(Test, "test"))).toBe(context);
+        });
+        it("returns parent context if not found in this context but in parent context", () => {
+            class Test {}
+            context.setClass(Test, { name: "test" });
+            const childContext = context.createChildContext();
+            expect(childContext.findContext("test")).toBe(context);
+            expect(childContext.findContext(Test)).toBe(context);
+            expect(childContext.findContext(qualify(Test, "test"))).toBe(context);
+        });
+        it("returns null if not found in this context and not in parent context", () => {
+            const childContext = context.createChildContext();
+            expect(childContext.findContext("test")).toBe(null);
+            expect(context.findContext("test")).toBe(null);
+        });
+    });
 });

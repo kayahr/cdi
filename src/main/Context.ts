@@ -221,6 +221,17 @@ export class Context {
         return this.#injectables.delete(qualifier);
     }
 
+    /**
+     * Returns the context containing the dependency matching the given qualifier. Starts searching with this context and then bubbles up to the parent
+     * context if not found in this one.
+     *
+     * @param qualifier - The qualifier to check.
+     * @returns The context containing the dependency matching the given qualifier. Null if not found anywhere.
+     */
+    public findContext(qualifier: Qualifier): Context | null {
+        return this.#injectables.has(qualifier) ? this : (this.#parent?.findContext(qualifier) ?? null);
+    }
+
     public get<T, P extends unknown[]>(fn: (...params: P) => T): Promise<(...params: unknown[]) => T> | ((...params: unknown[]) => T);
     public get<T>(qualifier: Qualifier<T>): T | Promise<T>;
 
