@@ -25,7 +25,5 @@
         "sourceMap": true,
         "strict": true,
         "target": "ES2022"
-    },
-    "include": [ "src" ],
-    "exclude": [ "src/**/*.legacy.ts" ]
+    }
 }
