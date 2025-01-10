@@ -72,7 +72,7 @@ if (context.has(DBService)) {
 Dependencies can be removed from a context with `remove`. This only affects the exact context, removal does not bubble up the parent hierarchy. It also only removes the exact qualifier. So when a class was registered by type and by name then removing just the type retains the named dependency and also the qualified type dependency. So if for some reason you must completely remove a named class then you need at least three remove calls (more if class was registered with multiple names):
 
 ```typescript
-context.set(Component, { name: "foo" });
+context.setClass(Component, { name: "foo" });
 context.remove(Component);
 context.remove("foo");
 context.remove(qualify(Component, "foo"));
