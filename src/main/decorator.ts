@@ -4,8 +4,9 @@
  */
 
 import type { Class, ClassDecorator, ClassMethodDecorator, Constructor, Factory } from "../main/types.js";
-import { Context, type InjectOptions } from "./Context.js";
-import type { Qualifiers } from "./Qualifier.js";
+import { Context, type InjectableOptions } from "./Context.js";
+import type { NullableQualifiers, Qualifiers } from "./Qualifier.js";
+import type { Scope } from "./Scope.js";
 
 /**
  * Target type for the {@link injectable} decorator.
@@ -41,8 +42,8 @@ function injectableWithoutOptions<T>(target: InjectableTarget<T, []>, context: I
     }
 }
 
-function injectableWithOptions<T, A extends unknown[]>(options: InjectOptions<A> & { inject: Qualifiers<A> }): InjectableDecorator<T, A> {
-    return (target: InjectableTarget<T, A>, context: InjectableDecoratorContext<T, A>) => {
+function injectableWithOptions<T, P extends unknown[], Q extends Qualifiers<P>>(options: InjectableOptions<Q> & { inject: Q }): InjectableDecorator<T, P> {
+    return (target: InjectableTarget<T, P>, context: InjectableDecoratorContext<T, P>) => {
         if (context.kind === "class") {
             context.addInitializer(function () {
                 Context.getActive().setClass(this, options);
@@ -64,7 +65,7 @@ function injectableWithOptions<T, A extends unknown[]>(options: InjectOptions<A>
  *
  * @template T - The class/method type
  */
-export function injectable<T>(options?: InjectOptions<[]>): InjectableDecorator<T, []>;
+export function injectable<T>(options?: InjectableOptions): InjectableDecorator<T, []>;
 
 /**
  * Decorator for a class or static factory with parameters. Inject options are not optional because dependency qualifiers must be specified so the injector
@@ -76,7 +77,20 @@ export function injectable<T>(options?: InjectOptions<[]>): InjectableDecorator<
  * @template T - The type of the decorated class or static method
  * @template P - The constructor/method parameter types
  */
-export function injectable<T, P extends unknown[]>(options: InjectOptions<P> & { inject: Qualifiers<P> }):  InjectableDecorator<T, P>;
+export function injectable<T, P extends unknown[], Q extends Qualifiers<P>>(options: InjectableOptions<Q> & { inject: Q }):  InjectableDecorator<T, P>;
+
+/**
+ * Decorator for a class or static factory with parameters. Inject options are not optional because dependency qualifiers must be specified so the injector
+ * knows what has to be injected.
+ *
+ * @param options - The inject options with a mandatory `inject` property.
+ * @returns the decorator
+ *
+ * @template T - The type of the decorated class or static method
+ * @template P - The constructor/method parameter types
+ */
+export function injectable<T, P extends unknown[], Q extends NullableQualifiers<P>>(options: InjectableOptions<Q>
+    & { inject: Q, scope: Scope.PROTOTYPE }): InjectableDecorator<T, P>;
 
 /**
  * Short-form of the decorator without any inject options. Can only be used on classes or static factories without parameters.

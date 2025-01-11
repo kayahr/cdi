@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { Context, type InjectOptions } from "../main/Context.js";
+import { Context, type InjectableOptions } from "../main/Context.js";
 import { injectable, type InjectableDecorator, type InjectableDecoratorContext, type InjectableTarget } from "../main/decorator.js";
 import * as exports from "../main/index.js";
 import { InjectionError } from "../main/InjectionError.js";
@@ -27,7 +27,7 @@ describe("index", () => {
         });
 
         // Interfaces and types can only be checked by TypeScript
-        ((): InjectOptions => (({} as exports.InjectOptions)))();
+        ((): InjectableOptions => (({} as exports.InjectableOptions)))();
         ((): Class => (({} as exports.Class)))();
         ((): Constructor => (({} as exports.Constructor)))();
         ((): Factory => (({} as exports.Factory)))();

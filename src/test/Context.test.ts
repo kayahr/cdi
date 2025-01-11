@@ -160,6 +160,21 @@ describe("Context", () => {
             const test2 = context.getSync(Test);
             expect(test2).toBe(test);
         });
+        it("can inject a synchronous class dependency with pass-through parameters", () => {
+            class Component {
+                public constructor(
+                    public readonly param1: string,
+                    public readonly service: DepA,
+                    public readonly param3: string
+                ) {}
+            }
+            context.setClass(DepA);
+            context.setClass(Component, { inject: [ null, DepA, null ], scope: Scope.PROTOTYPE });
+            const component = context.getSync(Component, [ "foo", 2 ]);
+            expect(component.service).toBe(context.getSync(DepA));
+            expect(component.param1).toBe("foo");
+            expect(component.param3).toBe(2);
+        });
         it("requires compatible inject array when class has dependencies", () => {
             class Test {
                 public constructor(public a: DepA, public b: DepB) {}
@@ -172,6 +187,8 @@ describe("Context", () => {
             context.setClass(Test, { inject: [ DepB, DepA ] });
             // @ts-expect-error Must not compile because too many dependencies are specified
             context.setClass(Test, { inject: [ DepA, DepB, DepB ] });
+            // @ts-expect-error Must not compile because null is not allowed in singleton-scoped dependency
+            context.setClass(Test, { inject: [ null, DepB ] });
             // @ts-expect-error Must not compile because inject option is missing
             context.setClass(Test, {});
             // @ts-expect-error Must not compile because inject options are required
@@ -404,6 +421,44 @@ describe("Context", () => {
             expect(test2).toBe(test);
             expect(test.value).toBe(53);
         });
+        it("can inject a synchronous class dependency with pass-through parameters", () => {
+            class Component {
+                private constructor(
+                    public readonly param1: string,
+                    public readonly service: DepA,
+                    public readonly param3: string
+                ) {}
+
+                public static create(param1: string, service: DepA, param3: string): Component {
+                    return new Component(param1, service, param3);
+                }
+            }
+            context.setClass(DepA);
+            context.setFactory(Component, Component.create, { inject: [ null, DepA, null ], scope: Scope.PROTOTYPE });
+            const component = context.getSync(Component, [ "foo", 2 ]);
+            expect(component.service).toBe(context.getSync(DepA));
+            expect(component.param1).toBe("foo");
+            expect(component.param3).toBe(2);
+        });
+        it("can inject a asynchronous class dependency with pass-through parameters", async () => {
+            class Component {
+                private constructor(
+                    public readonly param1: string,
+                    public readonly service: DepA,
+                    public readonly param3: string
+                ) {}
+
+                public static create(param1: string, service: DepA, param3: string): Promise<Component> {
+                    return Promise.resolve(new Component(param1, service, param3));
+                }
+            }
+            context.setClass(DepA);
+            context.setFactory(Component, Component.create, { inject: [ null, DepA, null ], scope: Scope.PROTOTYPE });
+            const component = await context.getAsync(Component, [ "foo", 2 ]);
+            expect(component.service).toBe(context.getSync(DepA));
+            expect(component.param1).toBe("foo");
+            expect(component.param3).toBe(2);
+        });
         it("requires compatible inject array when factory function has dependencies", () => {
             class Test {}
             function create(a: DepA, b: DepB): Test {
@@ -421,6 +476,8 @@ describe("Context", () => {
             context.setFactory(Test, create, { inject: [ DepA, null ] });
             // @ts-expect-error Must not compile because too many dependencies are specified
             context.setFactory(Test, create, { inject: [ DepA, DepB, DepB ] });
+            // @ts-expect-error Must not compile because null is not allowed in singleton-scoped dependency
+            context.setFactory(Test, create, { inject: [ null, DepB ] });
             // @ts-expect-error Must not compile because inject option is missing
             context.setFactory(Test, create, {});
             // @ts-expect-error Must not compile because inject options are required
@@ -620,6 +677,20 @@ describe("Context", () => {
             class Test {}
             expect(() => context.get(qualify(Test, "foo"))).toThrowWithMessage(InjectionError, "Dependency <Test:foo> not found");
             expect(() => context.get(qualify(Test, Symbol("foo")))).toThrowWithMessage(InjectionError, "Dependency <Test:Symbol(foo)> not found");
+        });
+        it("throws error when dependency needs pass-through parameters but none given", () => {
+            class Test {
+                public constructor(public a: string) {}
+            }
+            context.setClass(Test, { inject: [ null ], scope: Scope.PROTOTYPE });
+            expect(() => context.get(Test)).toThrowWithMessage(InjectionError, "Pass-through parameter 1 not found for dependency <Test>");
+        });
+        it("throws error when dependency needs pass-through parameters but not enough given", () => {
+            class Test {
+                public constructor(public a: string, public b: string) {}
+            }
+            context.setClass(Test, { inject: [ null, null ], scope: Scope.PROTOTYPE });
+            expect(() => context.get(Test, [ "test" ])).toThrowWithMessage(InjectionError, "Pass-through parameter 2 not found for dependency <Test>");
         });
     });
     describe("getAsync", () => {

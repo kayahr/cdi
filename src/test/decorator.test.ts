@@ -135,7 +135,7 @@ describe("decorator", () => {
         class Test5 {
             public constructor(public a: DepA, public b: DepB) {}
         }
-        // @ts-expect-error Must not compile because inject options are required
+        // @ts-expect-error Must not compile because injectable options are required
         @injectable()
         class Test6 {
             public constructor(public a: DepA, public b: DepB) {}
@@ -145,7 +145,7 @@ describe("decorator", () => {
         class Test7 {
             public constructor(public a: DepA, public b: DepB) {}
         }
-        // @ts-expect-error Must not compile because null inject is not allowed
+        // @ts-expect-error Must not compile because null inject is not allowed in singleton scope
         @injectable({ inject: [ DepA, null ] })
         class Test8 {
             public constructor(public a: DepA, public b: DepB) {}
@@ -329,7 +329,7 @@ describe("decorator", () => {
             }
         }
         class Test8 {
-            // @ts-expect-error Must not compile because null inject is not allowed
+            // @ts-expect-error Must not compile because null inject is not allowed in singleton scope
             @injectable({ inject: [ null, DepB ] })
             public static create(a: DepA, b: DepB): Test7 {
                 return new Test7();
@@ -338,5 +338,51 @@ describe("decorator", () => {
 
         // Dummy line to silence "defined but not used" warnings
         expect([ Test1, Test2, Test3, Test4, Test5, Test6, Test7, Test8 ]).toBeDefined();
+    });
+
+    it("supports pass-through parameters for synchronous prototype-scoped class", () => {
+        @injectable
+        class Service {}
+
+        @injectable({ inject: [ null, Service, null ], scope: Scope.PROTOTYPE })
+        class Component {
+            public constructor(
+                public readonly param1: string,
+                public readonly service: Service,
+                public readonly param3: string
+            ) {}
+        }
+
+        const component = context.getSync(Component, [ "foo", 2 ]);
+        expect(component.service).toBe(context.getSync(Service));
+        expect(component.param1).toBe("foo");
+        expect(component.param3).toBe(2);
+    });
+
+    it("supports pass-through parameters for asynchronous prototype-scoped class", async () => {
+        class Service {
+            @injectable
+            public static create(): Promise<Service> {
+                return Promise.resolve(new Service());
+            }
+        }
+
+        class Component {
+            private constructor(
+                public readonly param1: string,
+                public readonly service: Service,
+                public readonly param3: string
+            ) {}
+
+            @injectable({ inject: [ null, Service, null ], scope: Scope.PROTOTYPE })
+            public static create(param1: string, service: Service, param3: string): Promise<Component> {
+                return Promise.resolve(new Component(param1, service, param3));
+            }
+        }
+
+        const component = await context.getAsync(Component, [ "foo", 2 ]);
+        expect(component.service).toBe(context.getSync(Service));
+        expect(component.param1).toBe("foo");
+        expect(component.param3).toBe(2);
     });
 });

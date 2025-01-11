@@ -12,8 +12,10 @@ import { Scope } from "./Scope.js";
 
 /**
  * Options for creating an injectable class or factory.
+ *
+ * @param T - The inject types.
  */
-export interface InjectOptions<T extends unknown[] = unknown[]> {
+export interface InjectableOptions<T extends unknown[] = []> {
     /** The injection scope. Defaults to {@link Scope.SINGLETON}. */
     scope?: Scope;
 
@@ -21,7 +23,7 @@ export interface InjectOptions<T extends unknown[] = unknown[]> {
     name?: string | symbol | Array<string | symbol>;
 
     /** The parameter types. Optional when injectable has no parameters. Otherwise it must match the constructor/factory signature. */
-    inject?: Qualifiers<T>;
+    inject?: T;
 }
 
 /**
@@ -123,14 +125,15 @@ export class Context {
      * context is re-activated after construction.
      *
      * @param qualifier - The dependency qualifier. Either a type or a name.
+     * @param params    - Optional pass-through parameters for prototype-scoped class dependencies. Ignored for anything else.
      * @returns The constructed dependency. Can be a promise if dependency construction is async.
      * @throws {@link InjectionError} when dependency was not found.
      */
-    #get<T>(qualifier: Qualifier<T>): T | Promise<T> {
+    #get<T>(qualifier: Qualifier<T>, params?: unknown[]): T | Promise<T> {
         const previous = this.activate();
         try {
             const injectable = this.#injectables.get(qualifier) as Injectable<T> | null;
-            let value = injectable == null ? null : injectable.get();
+            let value = injectable == null ? null : injectable.get(qualifier, params);
             if (value == null && this.#parent != null) {
                 value = this.#parent.#get(qualifier);
             }
@@ -143,8 +146,10 @@ export class Context {
         }
     }
 
-    public setClass<T>(type: Constructor<T, []>, options?: InjectOptions<[]>): this;
-    public setClass<T, A extends unknown[]>(type: Constructor<T, A>, options: InjectOptions<A> & { inject: Qualifiers<A> }): this;
+    public setClass<T>(type: Constructor<T, []>, options?: InjectableOptions): this;
+    public setClass<T, P extends unknown[], Q extends Qualifiers<P>>(type: Constructor<T, P>, options: InjectableOptions<Q> & { inject: Q }): this;
+    public setClass<T, P extends unknown[], Q extends NullableQualifiers<P>>(type: Constructor<T, P>, options: InjectableOptions<Q>
+        & { inject: Q, scope: Scope.PROTOTYPE }): this;
 
     /**
      * Registers the given injectable class in this dependency injection context.
@@ -152,12 +157,15 @@ export class Context {
      * @param type    - The class to register. Must be constructable (constructor must be public).
      * @param options - Options for the injectable. Optional if class constructor has no parameters.
      */
-    public setClass<T, P extends unknown[]>(type: Constructor<T, P>, { inject, scope, name }: InjectOptions<P> = {}): this {
+    public setClass<T, P extends unknown[]>(type: Constructor<T, P>, { inject, scope, name }: InjectableOptions<NullableQualifiers<P>> = {}): this {
         return this.#setInjectable(new Injectable(type, (...args: P) => new type(...args), inject, name, scope));
     }
 
-    public setFactory<T>(type: Class<T>, factory: Factory<T, []>, options?: InjectOptions<[]>): this;
-    public setFactory<T, P extends unknown[]>(type: Class<T>, factory: Factory<T, P>, options: InjectOptions<P> & { inject: Qualifiers<P> }): this;
+    public setFactory<T>(type: Class<T>, factory: Factory<T, []>, options?: InjectableOptions): this;
+    public setFactory<T, P extends unknown[]>(type: Class<T>, factory: Factory<T, P>, options: InjectableOptions<Qualifiers<P>>
+        & { inject: Qualifiers<P> }): this;
+    public setFactory<T, P extends unknown[]>(type: Class<T>, factory: Factory<T, P>, options: InjectableOptions<NullableQualifiers<P>>
+        & { inject: NullableQualifiers<P>, scope: Scope.PROTOTYPE }): this;
 
     /**
      * Registers the given injectable factory in this dependency injection context.
@@ -166,7 +174,8 @@ export class Context {
      * @param factory - The factory function which creates the value (synchronous or asynchronous).
      * @param options - Options for the injectable. Optional if factory has no parameters.
      */
-    public setFactory<T, P extends unknown[]>(type: Class<T>, factory: Factory<T, P>, { inject, scope, name }: InjectOptions<P> = {}): this {
+    public setFactory<T, P extends unknown[], Q extends NullableQualifiers<P>>(type: Class<T>, factory: Factory<T, P>, { inject, scope, name }:
+            InjectableOptions<Q> = {}): this {
         return this.#setInjectable(new Injectable(type, factory.bind(type), inject, name, scope));
     }
 
@@ -233,7 +242,7 @@ export class Context {
     }
 
     public get<T, P extends unknown[]>(fn: (...params: P) => T): Promise<(...params: unknown[]) => T> | ((...params: unknown[]) => T);
-    public get<T>(qualifier: Qualifier<T>): T | Promise<T>;
+    public get<T>(qualifier: Qualifier<T>, params?: unknown[]): T | Promise<T>;
 
     /**
      * Returns the dependency matching the given qualifier in this dependency injection context. An exception is thrown when no dependency was found. This
@@ -241,39 +250,42 @@ export class Context {
      * asynchronous. If you already know that the result can only be synchronous or asynchronous then you can use {@link getSync} and {@link getAsync} instead.
      *
      * @param qualifier - The dependency injection qualifier (type or name).
+     * @param params    - Optional pass-through parameters for prototype-scoped class dependencies. Ignored for anything else.
      * @returns The found dependency (Synchronous if possible, asynchronous otherwise).
      * @throws {@link InjectionError} when dependency was not found.
      */
-    public get<T>(qualifier: Qualifier<T>): T | Promise<T> {
-        return this.#get(qualifier);
+    public get<T>(qualifier: Qualifier<T>, params?: unknown[]): T | Promise<T> {
+        return this.#get(qualifier, params);
     }
 
     public getAsync<T, P extends unknown[]>(fn: (...params: P) => T): Promise<(...params: unknown[]) => T>;
-    public getAsync<T>(qualifier: Qualifier<T>): Promise<T>;
+    public getAsync<T>(qualifier: Qualifier<T>, params?: unknown[]): Promise<T>;
 
     /**
      * Alias for {@link get} which always returns a promise, even when all involved dependencies are synchronous.
      *
      * @param qualifier - The dependency injection qualifier (type or name).
+     * @param params    - Optional pass-through parameters for prototype-scoped class dependencies. Ignored for anything else.
      * @returns The found dependency.
      * @throws {@link InjectionError} when dependency was not found.
      */
-    public async getAsync<T>(qualifier: Qualifier<T>): Promise<T> {
-        return this.get(qualifier);
+    public async getAsync<T>(qualifier: Qualifier<T>, params?: unknown[]): Promise<T> {
+        return this.get(qualifier, params);
     }
 
     public getSync<T, P extends unknown[]>(fn: (...params: P) => T): (...params: unknown[]) => T;
-    public getSync<T>(qualifier: Qualifier<T>): T;
+    public getSync<T>(qualifier: Qualifier<T>, params?: unknown[]): T;
 
     /**
      * Alias for {@link get} which always returns a synchronous value or throws an exception if an asynchronous dependency is involved.
      *
      * @param qualifier - The dependency injection qualifier (type or name).
+     * @param params    - Optional pass-through parameters for prototype-scoped class dependencies. Ignored for anything else.
      * @returns The found dependency.
      * @throws {@link InjectionError} when dependency was not found or is asynchronous.
      */
-    public getSync<T>(qualifier: Qualifier<T>): T {
-        const dependency = this.get(qualifier);
+    public getSync<T>(qualifier: Qualifier<T>, params?: unknown[]): T {
+        const dependency = this.get(qualifier, params);
         if (dependency instanceof Promise) {
             throw new InjectionError(`Asynchronous dependency ${Qualifier.toString(qualifier)} can not be resolved synchronously`);
         }

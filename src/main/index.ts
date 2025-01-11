@@ -3,7 +3,7 @@
  * See LICENSE.md for licensing information
  */
 
-export { Context, type InjectOptions } from "./Context.js";
+export { Context, type InjectableOptions } from "./Context.js";
 export { injectable, type InjectableDecorator, type InjectableDecoratorContext, type InjectableTarget } from "./decorator.js";
 export { InjectionError } from "./InjectionError.js";
 export { QualifiedType, qualify } from "./QualifiedType.js";
