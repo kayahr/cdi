@@ -43,8 +43,8 @@ export type Factory<T = unknown, P extends unknown[] = unknown[]> = (...args: P)
  *
  * @internal
  */
-export type ClassDecorator<T = unknown, P extends unknown[] = unknown[]> =
-    (target: Constructor<T, P>, context: ClassDecoratorContext<Constructor<T, P>>) => void;
+export type ClassDecorator<T = unknown, P extends unknown[] = unknown[]>
+    = (target: Constructor<T, P>, context: ClassDecoratorContext<Constructor<T, P>>) => void;
 
 /**
  * Type of a static factory method decorator.
@@ -54,8 +54,8 @@ export type ClassDecorator<T = unknown, P extends unknown[] = unknown[]> =
  *
  * @internal
  */
-export type ClassMethodDecorator<T = unknown, P extends unknown[] = unknown[]> =
-    (target: Factory<T, P>, context: ClassMethodDecoratorContext<Class<T>, Factory<T, P>>) => void;
+export type ClassMethodDecorator<T = unknown, P extends unknown[] = unknown[]>
+    = (target: Factory<T, P>, context: ClassMethodDecoratorContext<Class<T>, Factory<T, P>>) => void;
 
 /**
  * Returns the super class of the given class.
