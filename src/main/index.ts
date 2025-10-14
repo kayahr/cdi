@@ -3,10 +3,11 @@
  * See LICENSE.md for licensing information
  */
 
-export { Context, type InjectableOptions } from "./Context.js";
-export { injectable, type InjectableDecorator, type InjectableDecoratorContext, type InjectableTarget } from "./decorator.js";
-export { InjectionError } from "./InjectionError.js";
-export { QualifiedType, qualify } from "./QualifiedType.js";
-export { type NullableQualifier, type NullableQualifiers, type Qualifier, type Qualifiers } from "./Qualifier.js";
-export { Scope } from "./Scope.js";
-export { type Class, type ClassDecorator, type ClassMethodDecorator, type Constructor, type Factory } from "./types.js";
+export type { NullableQualifier, NullableQualifiers, Qualifier, Qualifiers } from "./Qualifier.ts";
+export type { Class, ClassDecorator, ClassMethodDecorator, Constructor, Factory } from "./types.ts";
+
+export { Context, type InjectableOptions } from "./Context.ts";
+export { injectable, type InjectableDecorator, type InjectableDecoratorContext, type InjectableTarget } from "./decorator.ts";
+export { InjectionError } from "./InjectionError.ts";
+export { QualifiedType, qualify } from "./QualifiedType.ts";
+export { Scope } from "./Scope.ts";

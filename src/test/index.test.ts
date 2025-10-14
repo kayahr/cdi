@@ -3,21 +3,22 @@
  * See LICENSE.md for licensing information
  */
 
-import { describe, expect, it } from "vitest";
+import { describe, it } from "node:test";
 
-import { Context, type InjectableOptions } from "../main/Context.js";
-import { injectable, type InjectableDecorator, type InjectableDecoratorContext, type InjectableTarget } from "../main/decorator.js";
-import * as exports from "../main/index.js";
-import { InjectionError } from "../main/InjectionError.js";
-import { QualifiedType, qualify } from "../main/QualifiedType.js";
-import {  type NullableQualifier, type NullableQualifiers, type Qualifier, type Qualifiers } from "../main/Qualifier.js";
-import { Scope } from "../main/Scope.js";
-import { type Class, type ClassDecorator, type ClassMethodDecorator, type Constructor, type Factory } from "../main/types.js";
+import { Context, type InjectableOptions } from "../main/Context.ts";
+import { type InjectableDecorator, type InjectableDecoratorContext, type InjectableTarget, injectable } from "../main/decorator.ts";
+import * as exports from "../main/index.ts";
+import { InjectionError } from "../main/InjectionError.ts";
+import { QualifiedType, qualify } from "../main/QualifiedType.ts";
+import type { NullableQualifier, NullableQualifiers, Qualifier, Qualifiers } from "../main/Qualifier.ts";
+import { Scope } from "../main/Scope.ts";
+import type { Class, ClassDecorator, ClassMethodDecorator, Constructor, Factory } from "../main/types.ts";
+import { assertEquals } from "@kayahr/assert";
 
 describe("index", () => {
     it("exports relevant types and functions and nothing more", () => {
         // Check functions, classes and enums
-        expect({ ...exports }).toEqual({
+        assertEquals({ ...exports }, {
             Context,
             InjectionError,
             Scope,

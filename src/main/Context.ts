@@ -3,12 +3,12 @@
  * See LICENSE.md for licensing information.
  */
 
-import { Injectable } from "../main/Injectable.js";
-import { InjectionError } from "../main/InjectionError.js";
-import { type Class, type Constructor, type Factory, getSuperClass } from "../main/types.js";
-import { qualify } from "./QualifiedType.js";
-import { type NullableQualifiers, Qualifier, Qualifiers } from "./Qualifier.js";
-import { Scope } from "./Scope.js";
+import { Injectable } from "../main/Injectable.ts";
+import { InjectionError } from "../main/InjectionError.ts";
+import { type Class, type Constructor, type Factory, getSuperClass } from "../main/types.ts";
+import { qualify } from "./QualifiedType.ts";
+import { type NullableQualifiers, Qualifier, type Qualifiers } from "./Qualifier.ts";
+import type { Scope } from "./Scope.ts";
 
 /**
  * Options for creating an injectable class or factory.
@@ -133,7 +133,7 @@ export class Context {
         const previous = this.activate();
         try {
             const injectable = this.#injectables.get(qualifier) as Injectable<T> | null;
-            let value = injectable == null ? null : injectable.get(qualifier, params);
+            let value = injectable == null ? null : injectable.get(this, qualifier, params);
             if (value == null && this.#parent != null) {
                 value = this.#parent.#get(qualifier);
             }
@@ -149,23 +149,23 @@ export class Context {
     public setClass<T>(type: Constructor<T, []>, options?: InjectableOptions): this;
     public setClass<T, P extends unknown[], Q extends Qualifiers<P>>(type: Constructor<T, P>, options: InjectableOptions<Q> & { inject: Q }): this;
     public setClass<T, P extends unknown[], Q extends NullableQualifiers<P>>(type: Constructor<T, P>, options: InjectableOptions<Q>
-        & { inject: Q, scope: Scope.PROTOTYPE }): this;
+        & { inject: Q, scope: typeof Scope.PROTOTYPE }): this;
 
     /**
      * Registers the given injectable class in this dependency injection context.
      *
-     * @param type    - The class to register. Must be constructable (constructor must be public).
+     * @param Type    - The class to register. Must be constructable (constructor must be public).
      * @param options - Options for the injectable. Optional if class constructor has no parameters.
      */
-    public setClass<T, P extends unknown[]>(type: Constructor<T, P>, { inject, scope, name }: InjectableOptions<NullableQualifiers<P>> = {}): this {
-        return this.#setInjectable(new Injectable(type, (...args: P) => new type(...args), inject, name, scope));
+    public setClass<T, P extends unknown[]>(Type: Constructor<T, P>, { inject, scope, name }: InjectableOptions<NullableQualifiers<P>> = {}): this {
+        return this.#setInjectable(new Injectable(Type, (...args: P) => new Type(...args), inject, name, scope));
     }
 
     public setFactory<T>(type: Class<T>, factory: Factory<T, []>, options?: InjectableOptions): this;
     public setFactory<T, P extends unknown[]>(type: Class<T>, factory: Factory<T, P>, options: InjectableOptions<Qualifiers<P>>
         & { inject: Qualifiers<P> }): this;
     public setFactory<T, P extends unknown[]>(type: Class<T>, factory: Factory<T, P>, options: InjectableOptions<NullableQualifiers<P>>
-        & { inject: NullableQualifiers<P>, scope: Scope.PROTOTYPE }): this;
+        & { inject: NullableQualifiers<P>, scope: typeof Scope.PROTOTYPE }): this;
 
     /**
      * Registers the given injectable factory in this dependency injection context.
@@ -292,3 +292,5 @@ export class Context {
         return dependency;
     }
 }
+
+// EOF

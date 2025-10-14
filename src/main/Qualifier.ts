@@ -3,8 +3,8 @@
  * See LICENSE.md for licensing information
  */
 
-import type { QualifiedType } from "./QualifiedType.js";
-import type { Class } from "./types.js";
+import type { QualifiedType } from "./QualifiedType.ts";
+import type { Class } from "./types.ts";
 
 /**
  * Type of a dependency qualifier. Either a class or a name/symbol.
@@ -37,11 +37,11 @@ export type NullableQualifiers<T extends unknown[] = unknown[]> = NoInfer<{ [ K 
 /**
  * @internal
  */
-export namespace Qualifier {
+export const Qualifier = {
     /**
      * @returns A string representation of the qualifier.
      */
-    export function toString(qualifier: Qualifier): string {
+    toString(qualifier: Qualifier): string {
         if (qualifier instanceof Function) {
             return `<${qualifier.name}>`;
         } else  if (typeof qualifier === "string") {
@@ -50,4 +50,4 @@ export namespace Qualifier {
             return qualifier.toString();
         }
     }
-}
+} as const;

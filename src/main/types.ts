@@ -61,7 +61,7 @@ export type ClassMethodDecorator<T = unknown, P extends unknown[] = unknown[]>
  * Returns the super class of the given class.
  *
  * @param type - The class for which to return the super class.
- * @return The super class of the given class. Null when class is the Object class which has no super class.
+ * @returns The super class of the given class. Null when class is the Object class which has no super class.
  */
 export function getSuperClass(type: Class): Class | null {
     return (Object.getPrototypeOf(type.prototype ?? Object.prototype) as Class)?.constructor ?? null;

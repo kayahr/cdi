@@ -3,10 +3,10 @@
  * See LICENSE.md for licensing information
  */
 
-import type { Class, ClassDecorator, ClassMethodDecorator, Constructor, Factory } from "../main/types.js";
-import { Context, type InjectableOptions } from "./Context.js";
-import type { NullableQualifiers, Qualifiers } from "./Qualifier.js";
-import type { Scope } from "./Scope.js";
+import type { Class, ClassDecorator, ClassMethodDecorator, Constructor, Factory } from "../main/types.ts";
+import { Context, type InjectableOptions } from "./Context.ts";
+import type { NullableQualifiers, Qualifiers } from "./Qualifier.ts";
+import type { Scope } from "./Scope.ts";
 
 /**
  * Target type for the {@link injectable} decorator.
@@ -90,7 +90,7 @@ export function injectable<T, P extends unknown[], Q extends Qualifiers<P>>(opti
  * @template P - The constructor/method parameter types
  */
 export function injectable<T, P extends unknown[], Q extends NullableQualifiers<P>>(options: InjectableOptions<Q>
-    & { inject: Q, scope: Scope.PROTOTYPE }): InjectableDecorator<T, P>;
+    & { inject: Q, scope: typeof Scope.PROTOTYPE }): InjectableDecorator<T, P>;
 
 /**
  * Short-form of the decorator without any inject options. Can only be used on classes or static factories without parameters.

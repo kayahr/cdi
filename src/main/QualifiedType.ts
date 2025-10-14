@@ -3,7 +3,7 @@
  * See LICENSE.md for licensing information.
  */
 
-import type { Class } from "./types.js";
+import type { Class } from "./types.ts";
 
 /** Map with cached qualified types. */
 const qualifiedTypes = new Map<Class, Map<string | symbol, QualifiedType>>();
@@ -15,16 +15,22 @@ const qualifiedTypes = new Map<Class, Map<string | symbol, QualifiedType>>();
  * @template T - The type to qualify with a name.
  */
 export class QualifiedType<T extends Class = Class> {
+    /** The type to qualify. */
+    public readonly type: T;
+
+    /** The name/symbol to qualify the type with. */
+    public readonly name: string | symbol;
+
     /**
      * Creates a new qualified type.
      *
      * @param type - The type to qualify.
      * @param name - The name/symbol to qualify the type with.
      */
-    private constructor(
-        public readonly type: T,
-        public readonly name: string | symbol
-    ) {}
+    private constructor(type: T, name: string | symbol) {
+        this.type = type;
+        this.name = name;
+    }
 
     /**
      * Returns the qualifier type for the given type and name. It is guaranteed to always return the same instance for the same combination of type and name.

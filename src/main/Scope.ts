@@ -4,12 +4,17 @@
  */
 
 /**
+ * The enum type of supported injection scopes.
+ */
+export type Scope = typeof Scope[keyof typeof Scope];
+
+/**
  * The supported injection scopes.
  */
-export enum Scope {
+export const Scope = {
     /** A single instance of the dependency is created and then cached. So the same instance of the dependency is injected everywhere. */
-    SINGLETON,
+    SINGLETON: 0,
 
     /** A new instance is created on every injection. */
-    PROTOTYPE
-}
+    PROTOTYPE: 1
+} as const;

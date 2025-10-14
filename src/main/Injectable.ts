@@ -3,11 +3,11 @@
  * See LICENSE.md for licensing information.
  */
 
-import { Context } from "./Context.js";
-import { InjectionError } from "./InjectionError.js";
-import { NullableQualifier, Qualifier } from "./Qualifier.js";
-import { Scope } from "./Scope.js";
-import { Class, Constructor, type Factory } from "./types.js";
+import type { Context } from "./Context.ts";
+import { InjectionError } from "./InjectionError.ts";
+import { type NullableQualifier, Qualifier } from "./Qualifier.ts";
+import { Scope } from "./Scope.ts";
+import type { Class, Constructor, Factory } from "./types.ts";
 
 /**
  * A resolvable and injectable dependency.
@@ -37,12 +37,12 @@ export class Injectable<T = unknown> {
         factory: (...args: any[]) => T | Promise<T>,
         params: NullableQualifier[] = [],
         name: string | symbol | Array<string | symbol> = [],
-        scope = Scope.SINGLETON
+        scope: Scope = Scope.SINGLETON
     ) {
         this.#type = type;
         this.#factory = factory;
         this.#params = params;
-        this.#names = name instanceof Array ? name.slice() : [ name ];
+        this.#names = Array.isArray(name) ? name.slice() : [ name ];
         this.#scope = scope;
     }
 
@@ -63,12 +63,12 @@ export class Injectable<T = unknown> {
     /**
      * Creates and returns a new dependency instance.
      *
+     * @param context   - The injection context.
      * @param qualifier - The requested qualifier. Used in error messages.
      * @param params    - Optional list of manual pass-through parameters.
      * @returns The created instance. Can be a promise when dependency is asynchronous.
      */
-    #createNewInstance(qualifier: Qualifier, params?: unknown[]): Promise<T> | T {
-        const context = Context.getActive();
+    #createNewInstance(context: Context, qualifier: Qualifier, params?: unknown[]): Promise<T> | T {
         let paramIndex = 0;
         const numParams = params?.length ?? 0;
         const values = this.#params.map(param => {
@@ -91,18 +91,17 @@ export class Injectable<T = unknown> {
     /**
      * Returns a singleton instance of the injectable. The created instance is cached so the same instance is returned on each call.
      *
+     * @param context   - The injection context.
      * @param qualifier - The requested qualifier. Used in error messages
      * @returns The created instance or a promise when asynchronous creation is in progress.
      */
-    #getSingletonInstance(qualifier: Qualifier): Promise<T> | T {
+    #getSingletonInstance(context: Context, qualifier: Qualifier): Promise<T> | T {
         if (this.#instance == null) {
-            this.#instance = this.#createNewInstance(qualifier);
+            this.#instance = this.#createNewInstance(context, qualifier);
 
             // Replace asynchronous instance with synchronous instance when resolved
             if (this.#instance instanceof Promise) {
-                void this.#instance.then(instance => {
-                    this.#instance = instance;
-                });
+                void this.#instance.then(instance => (this.#instance = instance));
             }
         }
         return this.#instance;
@@ -111,16 +110,17 @@ export class Injectable<T = unknown> {
     /**
      * Returns the instance of the injectable. Depending on the configured scope this can be a singleton instance or a new instance on every call.
      *
+     * @param context   - The injection context.
      * @param qualifier - The requested qualifier. Used in error messages
      * @param params    - Optional list of manual pass-through parameters fo prototype scoped injectables. Not used for singletons, they don't
      *                    support pass-through parameters.
      * @returns The instance or a promise when asynchronous creation is in progress.
      */
-    public get(qualifier: Qualifier, params?: unknown[]): Promise<T> | T {
+    public get(context: Context, qualifier: Qualifier, params?: unknown[]): Promise<T> | T {
         if (this.#scope === Scope.PROTOTYPE) {
-            return this.#createNewInstance(qualifier, params);
+            return this.#createNewInstance(context, qualifier, params);
         } else {
-            return this.#getSingletonInstance(qualifier);
+            return this.#getSingletonInstance(context, qualifier);
         }
     }
 }
