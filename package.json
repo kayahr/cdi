@@ -49,7 +49,7 @@
         "@kayahr/ntest": "1.1.0",
         "@kayahr/oxlint-config": "1.4.0",
         "@kayahr/typedoc": "0.28.14-bundle.1",
-        "@types/node": "24.7.2",
+        "@types/node": "24.9.0",
         "reflect-metadata": "0.2.2",
         "typescript": "5.9.3"
     }
