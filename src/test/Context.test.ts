@@ -5,7 +5,7 @@
 
 
 import { beforeEach, describe, it } from "node:test";
-import { assertInstanceOf, assertNotSame, assertSame, assertThrowWithMessage } from "@kayahr/assert";
+import { assertEquals, assertInstanceOf, assertNotSame, assertSame, assertThrowWithMessage } from "@kayahr/assert";
 import { Context } from "../main/Context.ts";
 import { InjectionError } from "../main/InjectionError.ts";
 import { qualify } from "../main/QualifiedType.ts";
@@ -630,115 +630,118 @@ describe("Context", () => {
         });
     });
     describe("injectFunction", () => {
-    //     it("injects a function without parameters (makes no sense, but should work anyway)", () => {
-    //         const spy = context.mock.fn();
-    //         function callSpy() {
-    //             spy();
-    //         }
-    //         context.setFunction(callSpy, []);
-    //         const test = context.getSync(callSpy);
-    //         expect(spy).not.toHaveBeenCalled();
-    //         test();
-    //         expect(spy).toHaveBeenCalledOnce();
-    //         test();
-    //         test();
-    //         assertSame(spy.mock.callCount(), 3);
-    //     });
-    //     it("injects a function with pass-through parameters only (makes no sense, but should work anyway)", () => {
-    //         const spy = context.mock.fn();
-    //         function callSpy(a: number, b: string) {
-    //             spy(a, b);
-    //         }
-    //         context.setFunction(callSpy, [ null, null ]);
-    //         const test = context.getSync(callSpy);
-    //         test(1, "test");
-    //         expect(spy).toHaveBeenCalledExactlyOnceWith(1, "test");
-    //     });
-    //     it("injects a function with injected parameters only", () => {
-    //         const spy = context.mock.fn();
-    //         function callSpy(a: number, b: string) {
-    //             spy(a, b);
-    //         }
-    //         context.setValue(2, "a");
-    //         context.setValue("foo", "b");
-    //         context.setFunction(callSpy, [ "a", "b" ]);
-    //         const test = context.getSync(callSpy);
-    //         test(1, "test");
-    //         expect(spy).toHaveBeenCalledExactlyOnceWith(2, "foo");
-    //     });
-    //     it("injects a function with injected and pass-through parameters", () => {
-    //         const spy = context.mock.fn();
-    //         function callSpy(a: number, b: string, c: number, d: string) {
-    //             spy(a, b, c, d);
-    //         }
-    //         context.setValue(2, "a");
-    //         context.setValue(3, "b");
-    //         context.setFunction(callSpy, [ "a", null, "b", null ]);
-    //         const test = context.getSync(callSpy);
-    //         test("foo", "bar");
-    //         expect(spy).toHaveBeenCalledExactlyOnceWith(2, "foo", 3, "bar");
-    //     });
-    //     it("injects the function as singleton", () => {
-    //         function callSpy() {}
-    //         context.setFunction(callSpy, []);
-    //         const test = context.getSync(callSpy);
-    //         assertSame(test, context.getSync(callSpy));
-    //     });
-    //     it("infers return type but cannot infer param types", () => {
-    //         function createNumber(): number {
-    //             return 2;
-    //         }
-    //         context.setFunction(createNumber, []);
-    //         const test = context.getSync(createNumber);
-    //         assertSame(test("ignored", "also ignored").toFixed(2), "2.00");
-    //     });
-    //     it("injects function with single string-named qualifier", () => {
-    //         const spy = context.mock.fn();
-    //         function callSpy() { spy(); }
-    //         context.setFunction(callSpy, [], "single-name");
-    //         const test = context.getSync<() => unknown>("single-name");
-    //         test();
-    //         expect(spy).toHaveBeenCalledOnce();
-    //     });
-    //     it("injects function with single symbol-named qualifier", () => {
-    //         const spy = context.mock.fn();
-    //         function callSpy() { spy(); }
-    //         const name = Symbol("single-name");
-    //         context.setFunction(callSpy, [], name);
-    //         const test = context.getSync<() => unknown>(name);
-    //         test();
-    //         expect(spy).toHaveBeenCalledOnce();
-    //     });
-    //     it("injects function with multiple names", () => {
-    //         const spy = context.mock.fn();
-    //         function callSpy() { spy(); }
-    //         const name2 = Symbol("name2");
-    //         context.setFunction(callSpy, [], [ "name1", name2 ]);
-    //         const test = context.getSync<() => unknown>("name1");
-    //         test();
-    //         expect(spy).toHaveBeenCalledOnce();
-    //         assertSame(context.getSync(name2), test);
-    //     });
-    //     it("injects function which can be injected into a class", () => {
-    //         const divide = (dividend: number, divisor: number) => dividend / divisor;
-    //         context.setValue(10, "divisor");
-    //         context.setFunction(divide, [ null, "divisor" ]);
-    //         class Test {
-    //             private readonly dividend: number;
-    //             private readonly divide: (dividend: number) => number;
-    //             public constructor(dividend: number, divide: (dividend: number) => number) {
-    //                 this.dividend = dividend;
-    //                 this.divide = divide;
-    //             }
-    //             public run(): number {
-    //                 return this.divide(this.dividend);
-    //             }
-    //         }
-    //         context.setValue(200, "dividend");
-    //         context.setClass(Test, { inject: [ "dividend", divide ] });
-    //         const test = context.getSync(Test);
-    //         assertSame(test.run(), 20);
-    //     });
+        it("injects a function without parameters (makes no sense, but should work anyway)", ctx => {
+            const spy = ctx.mock.fn();
+            function callSpy() {
+                spy();
+            }
+            context.setFunction(callSpy, []);
+            const test = context.getSync(callSpy);
+            assertSame(spy.mock.callCount(), 0);
+            test();
+            assertSame(spy.mock.callCount(), 1);
+            test();
+            test();
+            assertSame(spy.mock.callCount(), 3);
+        });
+        it("injects a function with pass-through parameters only (makes no sense, but should work anyway)", ctx => {
+            const spy = ctx.mock.fn();
+            function callSpy(a: number, b: string) {
+                spy(a, b);
+            }
+            context.setFunction(callSpy, [ null, null ]);
+            const test = context.getSync(callSpy);
+            test(1, "test");
+            assertSame(spy.mock.callCount(), 1);
+            assertEquals(spy.mock.calls[0].arguments, [ 1, "test" ]);
+        });
+        it("injects a function with injected parameters only", ctx => {
+            const spy = ctx.mock.fn();
+            function callSpy(a: number, b: string) {
+                spy(a, b);
+            }
+            context.setValue(2, "a");
+            context.setValue("foo", "b");
+            context.setFunction(callSpy, [ "a", "b" ]);
+            const test = context.getSync(callSpy);
+            test(1, "test");
+            assertSame(spy.mock.callCount(), 1);
+            assertEquals(spy.mock.calls[0].arguments, [ 2, "foo" ]);
+        });
+        it("injects a function with injected and pass-through parameters", ctx => {
+            const spy = ctx.mock.fn();
+            function callSpy(a: number, b: string, c: number, d: string) {
+                spy(a, b, c, d);
+            }
+            context.setValue(2, "a");
+            context.setValue(3, "b");
+            context.setFunction(callSpy, [ "a", null, "b", null ]);
+            const test = context.getSync(callSpy);
+            test("foo", "bar");
+            assertSame(spy.mock.callCount(), 1);
+            assertEquals(spy.mock.calls[0].arguments, [ 2, "foo", 3, "bar" ]);
+        });
+        it("injects the function as singleton", () => {
+            function callSpy() {}
+            context.setFunction(callSpy, []);
+            const test = context.getSync(callSpy);
+            assertSame(test, context.getSync(callSpy));
+        });
+        it("infers return type but cannot infer param types", () => {
+            function createNumber(): number {
+                return 2;
+            }
+            context.setFunction(createNumber, []);
+            const test = context.getSync(createNumber);
+            assertSame(test("ignored", "also ignored").toFixed(2), "2.00");
+        });
+        it("injects function with single string-named qualifier", ctx => {
+            const spy = ctx.mock.fn();
+            function callSpy() { spy(); }
+            context.setFunction(callSpy, [], "single-name");
+            const test = context.getSync<() => unknown>("single-name");
+            test();
+            assertSame(spy.mock.callCount(), 1);
+        });
+        it("injects function with single symbol-named qualifier", ctx => {
+            const spy = ctx.mock.fn();
+            function callSpy() { spy(); }
+            const name = Symbol("single-name");
+            context.setFunction(callSpy, [], name);
+            const test = context.getSync<() => unknown>(name);
+            test();
+            assertSame(spy.mock.callCount(), 1);
+        });
+        it("injects function with multiple names", ctx => {
+            const spy = ctx.mock.fn();
+            function callSpy() { spy(); }
+            const name2 = Symbol("name2");
+            context.setFunction(callSpy, [], [ "name1", name2 ]);
+            const test = context.getSync<() => unknown>("name1");
+            test();
+            assertSame(spy.mock.callCount(), 1);
+            assertSame(context.getSync(name2), test);
+        });
+        it("injects function which can be injected into a class", () => {
+            const divide = (dividend: number, divisor: number) => dividend / divisor;
+            context.setValue(10, "divisor");
+            context.setFunction(divide, [ null, "divisor" ]);
+            class Test {
+                private readonly dividend: number;
+                private readonly divide: (dividend: number) => number;
+                public constructor(dividend: number, divide: (dividend: number) => number) {
+                    this.dividend = dividend;
+                    this.divide = divide;
+                }
+                public run(): number {
+                    return this.divide(this.dividend);
+                }
+            }
+            context.setValue(200, "dividend");
+            context.setClass(Test, { inject: [ "dividend", divide ] });
+            const test = context.getSync(Test);
+            assertSame(test.run(), 20);
+        });
         it("injects function which can be injected into a factory", () => {
             context.setValue(10, "divisor");
             context.setFunction(divide, [ null, "divisor" ]);
