@@ -103,9 +103,7 @@ export function injectable<T, P extends unknown[], Q extends NullableQualifiers<
 export function injectable<T>(target: Constructor<T, []> | Factory<T, []>, context: InjectableDecoratorContext<T, []>): void;
 
 export function injectable(...args: unknown[]): InjectableDecorator | void {
-    if (args[0] instanceof Function) {
-        return injectableWithoutOptions(...args as Parameters<typeof injectableWithoutOptions>);
-    } else {
-        return injectableWithOptions(...args as Parameters<typeof injectableWithOptions>);
-    }
+    return args[0] instanceof Function
+        ? injectableWithoutOptions(...args as Parameters<typeof injectableWithoutOptions>)
+        : injectableWithOptions(...args as Parameters<typeof injectableWithOptions>);
 }

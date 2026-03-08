@@ -185,8 +185,8 @@ export class Context {
      * @param value - The value to inject.
      * @param name - Optional name (or names) under which to inject the value. If not set then value is only injected via its type.
      */
-    public setValue<T extends Object>(value: T, name?: string | symbol | Array<string | symbol>): this {
-        return this.#setInjectable(new Injectable(value.constructor as Constructor<T>, () => value, [], name));
+    public setValue(value: Object, name?: string | symbol | Array<string | symbol>): this {
+        return this.#setInjectable(new Injectable(value.constructor as Constructor, () => value, [], name));
     }
 
     /**
@@ -241,7 +241,7 @@ export class Context {
         return this.#injectables.has(qualifier) ? this : (this.#parent?.findContext(qualifier) ?? null);
     }
 
-    public get<T, P extends unknown[]>(fn: (...params: P) => T): Promise<(...params: unknown[]) => T> | ((...params: unknown[]) => T);
+    public get<T>(fn: (...params: unknown[]) => T): Promise<(...params: unknown[]) => T> | ((...params: unknown[]) => T);
     public get<T>(qualifier: Qualifier<T>, params?: unknown[]): T | Promise<T>;
 
     /**
@@ -258,7 +258,7 @@ export class Context {
         return this.#get(qualifier, params);
     }
 
-    public getAsync<T, P extends unknown[]>(fn: (...params: P) => T): Promise<(...params: unknown[]) => T>;
+    public getAsync<T>(fn: (...params: unknown[]) => T): Promise<(...params: unknown[]) => T>;
     public getAsync<T>(qualifier: Qualifier<T>, params?: unknown[]): Promise<T>;
 
     /**
@@ -273,7 +273,7 @@ export class Context {
         return this.get(qualifier, params);
     }
 
-    public getSync<T, P extends unknown[]>(fn: (...params: P) => T): (...params: unknown[]) => T;
+    public getSync<T>(fn: (...params: unknown[]) => T): (...params: unknown[]) => T;
     public getSync<T>(qualifier: Qualifier<T>, params?: unknown[]): T;
 
     /**

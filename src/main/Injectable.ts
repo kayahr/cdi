@@ -81,11 +81,9 @@ export class Injectable<T = unknown> {
                 return context.get(param);
             }
         });
-        if (values.some(value => value instanceof Promise)) {
-            return (async (): Promise<T> => this.#factory(...await Promise.all(values)))();
-        } else {
-            return this.#factory(...values);
-        }
+        return values.some(value => value instanceof Promise)
+            ? (async (): Promise<T> => this.#factory(...await Promise.all(values)))()
+            : this.#factory(...values);
     }
 
     /**
@@ -117,10 +115,6 @@ export class Injectable<T = unknown> {
      * @returns The instance or a promise when asynchronous creation is in progress.
      */
     public get(context: Context, qualifier: Qualifier, params?: unknown[]): Promise<T> | T {
-        if (this.#scope === Scope.PROTOTYPE) {
-            return this.#createNewInstance(context, qualifier, params);
-        } else {
-            return this.#getSingletonInstance(context, qualifier);
-        }
+        return this.#scope === Scope.PROTOTYPE ? this.#createNewInstance(context, qualifier, params) : this.#getSingletonInstance(context, qualifier);
     }
 }
