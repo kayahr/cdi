@@ -6,4 +6,7 @@
 /**
  * Thrown when some dependency injection related operation fails.
  */
-export class InjectionError extends Error {}
+export class InjectionError extends Error {
+    /** @inheritdoc */
+    public override name = "InjectionError";
+}
